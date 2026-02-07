@@ -17,7 +17,12 @@ export default defineConfig(({ mode }) => {
         if (!html.includes(pattern)) {
           throw new Error(`Could not find pattern ${pattern} in the html file`);
         }
-        return html.replace(pattern, CSP);
+        html = html.replace(pattern, CSP);
+        // In dev mode, allow inline scripts for Vite HMR
+        if (!PRODUCTION) {
+          html = html.replace("script-src 'self' 'unsafe-eval'", "script-src 'self' 'unsafe-eval' 'unsafe-inline'");
+        }
+        return html;
       },
     };
   };
@@ -83,7 +88,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       PRODUCTION,
-      AW_SERVER_URL: process.env.AW_SERVER_URL,
+      AW_SERVER_URL: process.env.AW_SERVER_URL || JSON.stringify('http://localhost:5600'),
       COMMIT_HASH: process.env.COMMIT_HASH,
       'process.env.VUE_APP_ON_ANDROID': process.env.VUE_APP_ON_ANDROID,
     },
